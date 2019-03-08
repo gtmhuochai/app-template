@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="edu.jmu.security.mapper.LoginHistoryMapper">
+    <resultMap id="loginHistory" type="edu.jmu.security.model.LoginHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="loginIp" column="login_ip"/>
+        <result property="loginTime" column="login_time"/>
+        <result property="remark" column="remark"/>
+        <collection property="user" resultMap="edu.jmu.security.mapper.UserMapper.user" columnPrefix="u_"/>
+    </resultMap>
+    <insert id="addLoginHistory">
+        INSERT INTO sys_login_history (id, user_id, login_time, login_ip, remark)
+        VALUES (#{id}, #{userId}, #{loginTime}, #{loginIp}, #{remark})
+    </insert>
+    <select id="queryByKeyword" resultMap="loginHistory">
+        SELECT * FROM sys_login_history
+        <where>
+            <if test="keyword!=null">
+                id = #{keyword}
+                OR
+                user_id = #{keyword}
+                OR
+                unix_timestamp(login_time) &gt; unix_timestamp(#{keyword})
+                OR
+                login_ip LIKE BINARY CONCAT(CONCAT('%',#{keyword}),'%')
+                OR
+                remark LIKE BINARY CONCAT(CONCAT('%',#{keyword}),'%')
+            </if>
+        </where>
+    </select>
+    <select id="queryByRequirement" resultMap="loginHistory">
+        SELECT
+        history.id AS id,
+        history.login_time AS login_time,
+        history.login_ip AS login_ip,
+        history.remark AS remark,
+        history.user_id AS u_id,
+        u.nickname AS u_nickname,
+        u.avatar AS u_avatar
+        FROM sys_login_history history
+        LEFT JOIN sys_user u ON u.id = history.user_id
+        <where>
+            <if test="type == 1">AND history.remark = "商户登陆"</if>
+            <if test="type == 2">AND history.remark != "商户登陆"</if>
+            <if test="userId != null">AND history.user_id = #{userId}</if>
+            <if test="startTime != null">history.login_time BETWEEN #{startTime} AND #{endTime}</if>
+        </where>
+    </select>
+</mapper>

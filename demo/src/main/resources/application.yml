@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: prod
+jwt:
+  header: Authorization
+  secret: mySecret
+  expiration: 3600000
+  route:
+    authentication:
+      path: /auth
+      refresh: /refresh
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  mapper-locations: classpath:mapper/*Mapper.xml

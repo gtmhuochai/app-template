@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <property name="base_log_dir" value="logs/demo"/>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy/MM/dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="debugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${base_log_dir}/debug.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 设置滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--设置日志命名模式-->
+            <fileNamePattern>${base_log_dir}/debug-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!--最多保留30天log-->
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %-5level %X{invokeNo} %logger{40} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${base_log_dir}/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 设置滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--设置日志命名模式-->
+            <fileNamePattern>${base_log_dir}/error-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!--最多保留30天log-->
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %-5level %X{invokeNo} %logger{40} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${base_log_dir}/info.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 设置滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--设置日志命名模式-->
+            <fileNamePattern>${base_log_dir}/info-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!--最多保留30天log-->
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %-5level %X{invokeNo} %logger{40} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="frameworkAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${base_log_dir}/framework.log</file>
+        <!-- 设置滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--设置日志命名模式-->
+            <fileNamePattern>${base_log_dir}/framework-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!--最多保留30天log-->
+            <maxHistory>3</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} %msg%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="edu.jmu" level="ERROR" addtivity="false">
+        <appender-ref ref="errorAppender"/>
+        <appender-ref ref="debugAppender"/>
+        <appender-ref ref="infoAppender"/>
+    </logger>
+    <root level="DEBUG">
+        <appender-ref ref="frameworkAppender"/>
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

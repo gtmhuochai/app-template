@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="edu.jmu.security.mapper.UserMapper">
+    <resultMap id="user" type="edu.jmu.security.model.User">
+        <id column="id" property="id"/>
+        <result column="type" property="userType"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+        <result column="nickname" property="nickname"/>
+        <result column="birthday" property="birthday"/>
+        <result column="sex" property="sex"/>
+        <result column="email" property="email"/>
+        <result column="url" property="url"/>
+        <result column="mobile" property="mobile"/>
+        <result column="avatar" property="avatar"/>
+        <result column="signature" property="signature"/>
+        <result column="enabled" property="enabled"/>
+        <result column="last_password_reset_date" property="lastPasswordResetDate"/>
+        <result column="reg_time" property="registerTime" javaType="java.time.Instant"/>
+        <result column="disabled_reason" property="disabledReason"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="status" property="status"/>
+        <collection property="roles" resultMap="role_inner" columnPrefix="role_"/>
+        <collection property="authorities" resultMap="authority_inner" columnPrefix="au_"/>
+    </resultMap>
+    <resultMap id="role_inner" type="edu.jmu.security.model.Role">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="enabled" column="enabled"/>
+        <result property="displayName" column="display_name"/>
+    </resultMap>
+    <resultMap id="authority_inner" type="edu.jmu.security.model.Authority">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="displayName" column="display_name"/>
+    </resultMap>
+    <insert id="addUser" parameterType="edu.jmu.security.model.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (id,
+                              type,
+                              username,
+                              password,
+                              real_name,
+                              nickname,
+                              birthday,
+                              sex,
+                              email,
+                              enabled,
+                              url,
+                              mobile,
+                              avatar,
+                              signature,
+                              last_password_reset_date,
+                              reg_time,
+                              disabled_reason,
+                              last_login_ip,
+                              status)
+        VALUES (#{id},
+                #{userType},
+                #{username},
+                #{password},
+                #{realName},
+                #{nickname},
+                #{birthday},
+                #{sex},
+                #{email},
+                #{enabled},
+                #{url},
+                #{mobile},
+                #{avatar},
+                #{signature},
+                #{lastPasswordResetDate},
+                #{registerTime},
+                #{disabledReason},
+                #{lastLoginIp},
+                #{status})
+    </insert>
+    <insert id="addUserRoles">
+        INSERT INTO sys_user_role ( user_id, role_id) VALUES
+        <foreach collection="roles" item="role" separator=",">
+            (#{userId},#{role.id})
+        </foreach>
+    </insert>
+    <insert id="addUserRole">
+        INSERT INTO sys_user_role (user_id, role_id)
+        VALUES (#{userId}, #{roleId})
+    </insert>
+    <update id="updateUser">
+        UPDATE sys_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userType!=null">type=#{userType},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="password!=null">password=#{password},</if>
+            <if test="realName!=null">real_name=#{realName},</if>
+            <if test="nickname!=null">nickname=#{nickname},</if>
+            <if test="birthday!=null">birthday=#{birthday},</if>
+            <if test="sex!=null">sex=#{sex},</if>
+            <if test="email!=null">email=#{email},</if>
+            <if test="url!=null">url=#{url},</if>
+            <if test="mobile!=null">mobile=#{mobile},</if>
+            <if test="avatar!=null">avatar=#{avatar},</if>
+            <if test="signature!=null">signature=#{signature},</if>
+            <if test="enabled!=null">enabled=#{enabled},</if>
+            <if test="lastPasswordResetDate!=null">last_password_reset_date=#{lastPasswordResetDate},</if>
+            <if test="registerTime!=null">reg_time=#{registerTime},</if>
+            <if test="disabledReason!=null">disabled_reason=#{disabledReason},</if>
+            <if test="lastLoginIp!=null">last_login_ip=#{lastLoginIp},</if>
+            <if test="status!=null">status=#{status}</if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteUser">
+        DELETE
+        FROM sys_user
+        WHERE id = #{id}
+    </delete>
+    <delete id="deleteUserRoles">
+        DELETE
+        FROM sys_user_role
+        WHERE user_id = #{userId}
+    </delete>
+    <delete id="deleteUserRole">
+        DELETE
+        FROM sys_user_role
+        WHERE user_id = #{userId}
+          AND role_id = #{roleId}
+    </delete>
+    <sql id="select_user_role_column_list">
+        SELECT limitable.id,
+               limitable.type,
+               limitable.enabled,
+               limitable.username,
+               limitable.password,
+               limitable.real_name,
+               limitable.nickname,
+               limitable.birthday,
+               limitable.sex,
+               limitable.email,
+               limitable.url,
+               limitable.mobile,
+               limitable.avatar,
+               limitable.signature,
+               limitable.last_password_reset_date,
+               limitable.reg_time,
+               limitable.disabled_reason,
+               limitable.last_login_ip,
+               limitable.status,
+               role.id           AS role_id,
+               role.name         AS role_name,
+               role.enabled      AS role_enabled,
+               role.display_name AS role_display_name,
+               au.id             AS au_id,
+               au.name           AS au_name,
+               au.display_name   AS au_display_name
+    </sql>
+    <select id="findByUsername" resultMap="user">
+        <include refid="select_user_role_column_list"/>
+        FROM (SELECT * FROM sys_user u WHERE u.username = #{username}) AS limitable
+        LEFT JOIN sys_user_role ur ON ur.user_id = limitable.id
+        LEFT JOIN sys_role role ON ur.role_id = role.id
+        LEFT JOIN sys_role_authority ra ON ra.role_id = ur.role_id
+        LEFT JOIN sys_authority au ON ra.authority_id = au.id
+    </select>
+    <select id="queryUserById" resultMap="user">
+        <include refid="select_user_role_column_list"/>
+        FROM (SELECT * FROM sys_user u
+        <where>
+            <if test="id!=null">
+                u.id = #{id}
+            </if>
+        </where>
+        ) AS limitable
+        LEFT JOIN sys_user_role ur ON ur.user_id = limitable.id
+        LEFT JOIN sys_role ON ur.role_id = role.id
+        LEFT JOIN sys_role_authority ra ON ra.role_id = ur.role_id
+        LEFT JOIN sys_authority au ON ra.authority_id = au.id
+    </select>
+    <select id="findByMobile" resultMap="user">
+        SELECT *
+        FROM sys_user
+        WHERE mobile = #{mobile}
+          AND type = #{type}
+    </select>
+    <select id="checkUnique" resultType="java.lang.Boolean">
+        SELECT COUNT(0)
+        FROM sys_user
+        WHERE type = 3
+          AND ${item} = #{name}
+    </select>
+    <select id="queryUserByIdAndType" resultMap="user">
+        <include refid="select_user_role_column_list"/>
+        FROM (SELECT * FROM sys_user u
+        <where>
+            <if test="type != null">
+                u.type = #{type}
+            </if>
+        </where>
+        ORDER BY u.id DESC
+        ) AS limitable
+        LEFT JOIN sys_user_role ur ON ur.user_id = limitable.id
+        LEFT JOIN sys_role role ON ur.role_id = role.id
+        LEFT JOIN sys_role_authority ra ON ra.role_id = ur.role_id
+        LEFT JOIN sys_authority au ON ra.authority_id = au.id
+        ORDER BY limitable.id DESC
+    </select>
+    <select id="findById" resultMap="user">
+        <include refid="select_user_role_column_list"/>
+        FROM (SELECT * FROM sys_user u
+        <where>
+            u.id = #{id} AND
+            <if test="type != null">
+                u.type = #{type}
+            </if>
+        </where>
+        ORDER BY u.id DESC
+        ) AS limitable
+        LEFT JOIN sys_user_role ur ON ur.user_id = u.id
+        LEFT JOIN sys_role role ON ur.role_id = role.id
+        LEFT JOIN sys_role_authority ra ON ra.role_id = ur.role_id
+        LEFT JOIN sys_authority au ON ra.authority_id = au.id
+    </select>
+
+    <select id="queryUserByRequirement" resultMap="user">
+        <include refid="select_user_role_column_list"/>
+        FROM (SELECT * FROM sys_user u
+        <where>
+            <if test="keyword != null">
+                u.id LIKE CONCAT('%',#{keyword},'%')
+                AND u.nickname LIKE CONCAT('%',#{keyword},'%')
+                AND u.mobile LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="type != null">
+                u.type = #{type}
+            </if>
+        </where>
+        ORDER BY u.id DESC
+        ) AS limitable
+        LEFT JOIN sys_user_role ur ON ur.user_id = limitable.id
+        LEFT JOIN sys_role role ON ur.role_id = role.id
+        LEFT JOIN sys_role_authority ra ON ra.role_id = ur.role_id
+        LEFT JOIN sys_authority au ON ra.authority_id = au.id
+        ORDER BY limitable.id DESC
+    </select>
+
+</mapper>

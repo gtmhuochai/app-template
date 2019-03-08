@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="edu.jmu.security.mapper.RoleMapper">
+    <resultMap id="role" type="edu.jmu.security.model.Role">
+        <id property="id" column="role_id"/>
+        <result property="name" column="role_name"/>
+        <result property="enabled" column="role_enabled"/>
+        <result property="displayName" column="role_display_name"/>
+        <collection property="authorityList" resultMap="edu.jmu.security.mapper.AuthorityMapper.authority"/>
+    </resultMap>
+    <insert id="addRole" parameterType="edu.jmu.security.model.Role" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_role (id, name, enabled, display_name)
+        VALUES (#{id}, #{name}, #{enabled}, #{displayName})
+    </insert>
+    <insert id="addRoleAuthorities">
+        INSERT INTO sys_role_authority (role_id, authority_id) VALUES
+        <foreach collection="authorities" item="authority" separator=",">
+            (#{roleId},#{authority.id})
+        </foreach>
+    </insert>
+    <insert id="addRoleAuthority">
+        INSERT INTO sys_role_authority (role_id, authority_id)
+        VALUES (#{roleId}, #{authorityId})
+    </insert>
+    <update id="updateRole" parameterType="edu.jmu.security.model.Role">
+        UPDATE sys_role
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="enabled!=null">enabled=#{enabled}</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteRole">
+        DELETE
+        FROM sys_role
+        WHERE id = #{id}
+    </delete>
+    <delete id="deleteRoleAuthorities">
+        DELETE
+        FROM sys_role_authority
+        WHERE role_id = #{id}
+    </delete>
+    <delete id="deleteBatchRole">
+        DELETE FROM sys_role
+        WHERE id IN
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteBatchRoleAuthorities">
+        DELETE FROM sys_role_authority
+        WHERE role_id IN
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteRoleAuthority">
+        DELETE
+        FROM sys_role_authority
+        WHERE role_id = #{roleId}
+          AND authority_id = #{authorityId}
+
+    </delete>
+    <select id="queryRoleById" resultMap="role">
+        SELECT
+        limitable.id AS role_id,
+        limitable.name AS role_name,
+        limitable.enabled AS role_enabled,
+        limitable.display_name AS role_display_name,
+        'UPDATE' AS role_status,
+        au.id AS au_id,
+        au.name AS au_name,
+        au.display_name AS au_display_name,
+        'UPDATE' AS au_status
+        FROM (SELECT * FROM role
+        <where>
+            <if test="id!=null">
+                role.id = #{id}
+            </if>
+        </where>
+        ) AS limitable
+        LEFT JOIN role_authority ra ON ra.role_id = limitable.id
+        LEFT JOIN authority au ON ra.authority_id = au.id
+
+    </select>
+</mapper>
