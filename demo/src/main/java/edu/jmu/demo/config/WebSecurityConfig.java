@@ -103,7 +103,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .ignoring()
                 .antMatchers(
                         HttpMethod.GET,
-                        "/", "/#/**",
+                        "/error",
+                        "/",
+                        "/#/**",
                         "/favicon.ico",
                         "/**/*.html",
                         "/**/*.css",
