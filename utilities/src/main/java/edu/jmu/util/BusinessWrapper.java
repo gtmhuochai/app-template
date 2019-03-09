@@ -26,5 +26,6 @@ public class BusinessWrapper {
         logger.error(ExceptionUtil.getStackTrace(e));
         response.setException(e.getMessage());
         response.setCode(201);
+        response.setMessage(e.getMessage());
     }
 }

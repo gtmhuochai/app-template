@@ -1,16 +1,16 @@
 package edu.jmu.security.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.jmu.util.BasicResponse;
-import edu.jmu.util.BusinessWrapper;
-import edu.jmu.util.ExceptionUtil;
-import edu.jmu.util.ResponseUtil;
 import edu.jmu.security.JwtAuthenticationRequest;
 import edu.jmu.security.JwtTokenUtil;
 import edu.jmu.security.mapper.LoginHistoryMapper;
 import edu.jmu.security.model.LoginHistory;
 import edu.jmu.security.model.User;
 import edu.jmu.security.service.UserService;
+import edu.jmu.util.BasicResponse;
+import edu.jmu.util.BusinessWrapper;
+import edu.jmu.util.ExceptionUtil;
+import edu.jmu.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +131,17 @@ public class AuthenticationController {
             }
         }, logger);
 
+    }
+
+    @PostMapping("/logout")
+    public BasicResponse<Boolean> logout(HttpServletRequest request) {
+        return BusinessWrapper.wrap(response -> {
+            String authToken = request.getHeader(tokenHeader);
+            final String token = authToken.substring(7);
+            String username = jwtTokenUtil.getUsernameFromToken(token);
+            userService.evictUserByUsername(username);
+            ResponseUtil.set(response, 0, "注销成功", true);
+        }, logger);
     }
 
     @ExceptionHandler({AuthenticationException.class})

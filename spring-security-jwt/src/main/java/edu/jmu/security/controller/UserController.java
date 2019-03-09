@@ -38,7 +38,7 @@ public class UserController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @GetMapping(value = "/users")
+    @GetMapping(value = "/user")
     public BasicResponse<User> getUserInfo(HttpServletRequest request) {
         String authToken = request.getHeader(tokenHeader);
         final String token = authToken.substring(7);
