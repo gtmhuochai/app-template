@@ -93,10 +93,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // AuthenticationTokenFilter will ignore the below paths
         web.ignoring().antMatchers(
                 HttpMethod.POST,
-                "/security" + authenticationPath,
-                "/register/**",
-                "/tenant_login/**",
-                "/tenant/trades"
+                "/security" + authenticationPath
         )
                 // allow anonymous resource requests
                 .and()
@@ -105,7 +102,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         HttpMethod.GET,
                         "/error",
                         "/",
-                        "/#/**",
                         "/favicon.ico",
                         "/**/*.html",
                         "/**/*.css",
